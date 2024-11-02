@@ -1,59 +1,75 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, StyleSheet, Platform, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useEffect, useState } from "react";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import db from "@/libs/firebase";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-
+type Shop = {
+  name: string;
+  place: string;
+};
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+  const [shops, setShops] = useState<Shop[]>([]);
+  useEffect(() => {
+    getFirebaseItems();
+  }, []);
+
+  const getFirebaseItems = async () => {
+    await getDocs(collection(db, "shops")).then((snapshot) => {
+      const shopsArray = snapshot.docs.map((doc) => doc.data() as Shop); // 配列を作成
+      setShops(shopsArray); // 配列としてセット
+    });
+
+    // 条件検索
+    // const q = query(
+    //   collection(db, "shops"),
+    //   where("name", "==", "恵比寿コーヒー")
+    // );
+
+    // try {
+    //   const querySnapshot = await getDocs(q);
+    //   querySnapshot.forEach((doc) => {
+    //     console.log(" 検索結果 ", doc.data());
+    //   });
+    // } catch (error) {
+    //   console.error("Error getting documents: ", error);
+    // }
+
+    // 更新できる
+    // await updateDoc(doc(db, "shops", "CAUNobv5zUgMSQrj2RKi"), {
+    //   name: "レストラン品川1号店",
+    // });
+
+    // 新規作成（ID自動）
+    // await addDoc(collection(db, "shops"), {
+    //   name: "恵比寿コーヒー",
+    //   place: "恵比寿",
+    // });
+  };
+
+  const shopItems = shops.map((shop, index) => (
+    <View>
+      <Text>{shop?.name}</Text>
+      <Text>{shop?.place}</Text>
+    </View>
+  ));
+
+  return <SafeAreaView>{shopItems}</SafeAreaView>;
 }
 
 const styles = StyleSheet.create({
   titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   stepContainer: {
@@ -65,6 +81,6 @@ const styles = StyleSheet.create({
     width: 290,
     bottom: 0,
     left: 0,
-    position: 'absolute',
+    position: "absolute",
   },
 });
